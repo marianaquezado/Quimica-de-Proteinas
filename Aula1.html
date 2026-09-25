@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Da sequência à estrutura · Química de Proteínas</title>
+<meta name="description" content="Aula prática em sete etapas: da sequência da lisozima C de galinha (UniProt P00698) ao modelo tridimensional validado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Mesmas cores da página inicial do curso */
+  :root{
+    --fundo:   #F4F7F6;
+    --papel:   #FFFFFF;
+    --tinta:   #10252E;
+    --tinta-2: #55686F;
+    --linha:   #D5DEDC;
+    --destaque:#2E5FA8;
+    --verde:   #3A8A66;
+    --vermelho:#B8433A;
+    --ocre:    #B8862A;
+    --violeta: #7A5AA6;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+
+  body{margin:0; background:var(--fundo); color:var(--tinta);
+       font-family:"Literata", Georgia, "Times New Roman", serif; font-size:18px; line-height:1.7}
+  .coluna{max-width:780px; margin:0 auto; padding:0 24px}
+  a{color:var(--destaque); text-underline-offset:3px}
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{outline:3px solid var(--destaque); outline-offset:2px}
+  code, .mono{font-family:"JetBrains Mono", Consolas, monospace; font-size:.88em}
+
+  /* ---------- abertura ---------- */
+  .voltar{display:inline-block; margin:32px 0 0; font-size:16px}
+  header{padding:40px 0 8px}
+  .instituicao{color:var(--tinta-2); font-size:16px; margin:0 0 12px}
+  h1{font-size:clamp(40px, 7vw, 64px); font-weight:700; line-height:1.03; letter-spacing:-.02em; margin:0 0 18px}
+  .resumo{font-size:20px; margin:0 0 12px}
+
+  /* sumário: é uma sequência real de etapas */
+  nav.etapas{margin:36px 0 0; padding:20px 0; border-top:1px solid var(--linha); border-bottom:1px solid var(--linha)}
+  nav.etapas ol{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:6px 20px; counter-reset:e}
+  nav.etapas li{counter-increment:e; font-size:16px}
+  nav.etapas li::before{content:counter(e); font-family:"JetBrains Mono", monospace; font-weight:600; color:var(--destaque); margin-right:10px}
+  nav.etapas li.extra::before{content:"+"}
+
+  /* ---------- etapas ---------- */
+  section{padding:64px 0 0; scroll-margin-top:16px}
+  .num{font-family:"JetBrains Mono", monospace; font-weight:600; font-size:15px; color:var(--destaque); margin:0 0 4px}
+  h2{font-size:32px; font-weight:700; line-height:1.15; margin:0 0 18px; letter-spacing:-.01em}
+  h3{font-size:21px; font-weight:700; margin:32px 0 10px}
+  p{margin:0 0 16px}
+  ul, ol{padding-left:1.2em; margin:0 0 16px}
+  li{margin:0 0 6px}
+
+  .fazer{background:var(--papel); border:1px solid var(--linha); border-left:4px solid var(--destaque);
+         border-radius:4px; padding:18px 22px; margin:0 0 24px}
+  .fazer h3{margin:0 0 8px; font-size:17px; color:var(--destaque)}
+  .fazer p:last-child, .fazer ol:last-child, .fazer ul:last-child{margin-bottom:0}
+
+  .alerta{border-left:4px solid var(--vermelho); padding:4px 0 4px 18px; margin:0 0 20px; font-size:17px}
+  .alerta strong{color:var(--vermelho)}
+
+  details.pensar{background:#EEF3F1; border-radius:4px; padding:14px 20px; margin:24px 0 0}
+  details.pensar summary{cursor:pointer; font-weight:700}
+  details.pensar[open] summary{margin-bottom:10px}
+  details.pensar p:last-child{margin-bottom:0}
+
+  /* ---------- FASTA interativo ---------- */
+  .fasta{background:var(--papel); border:1px solid var(--linha); border-radius:4px; padding:20px 22px; margin:0 0 8px; overflow-x:auto}
+  .fasta pre{margin:0; font-family:"JetBrains Mono", monospace; font-size:14.5px; line-height:1.75; white-space:pre}
+  .campo{border-bottom:2px solid var(--ocre); cursor:pointer; border-radius:2px}
+  .campo:hover, .campo.ativo{background:var(--ocre); color:#fff}
+  .sinal{color:var(--vermelho); font-weight:600}
+  .explica{min-height:3.4em; font-size:16px; margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--linha)}
+  .nota{font-size:15px; color:var(--tinta-2)}
+
+  /* ---------- EC em degraus ---------- */
+  ol.ec{list-style:none; padding:0; margin:0 0 20px}
+  ol.ec li{padding:10px 0 10px calc(var(--n) * 28px); border-bottom:1px solid var(--linha); margin:0}
+  ol.ec .cod{font-family:"JetBrains Mono", monospace; font-weight:600; color:var(--destaque); display:inline-block; min-width:6.5em}
+
+  /* ---------- grades de itens ---------- */
+  .quatro{display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:14px; margin:0 0 20px; padding:0; list-style:none; counter-reset:q}
+  .quatro li{background:var(--papel); border:1px solid var(--linha); border-radius:4px; padding:14px 16px; margin:0; font-size:16px; counter-increment:q}
+  .quatro li strong{display:block; margin-bottom:4px}
+  .quatro li strong::before{content:counter(q) ". "; color:var(--destaque); font-family:"JetBrains Mono", monospace}
+  .quatro.sem-num li strong::before{content:none}
+
+  table{width:100%; border-collapse:collapse; font-size:16px; margin:0 0 20px}
+  .tabela{overflow-x:auto}
+  th, td{text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--linha)}
+  th{font-weight:700; background:#EEF3F1}
+  td.n{font-family:"JetBrains Mono", monospace; text-align:right; width:4em}
+
+  .formula{font-family:"JetBrains Mono", monospace; font-size:16px; background:var(--papel); border:1px solid var(--linha);
+           border-radius:4px; padding:12px 16px; margin:0 0 16px; overflow-x:auto; white-space:nowrap}
+
+  figure{margin:0 0 20px}
+  figcaption{font-size:15px; color:var(--tinta-2); margin-top:8px}
+  svg text{font-family:"Literata", Georgia, serif}
+
+  /* ---------- síntese 3D ---------- */
+  #visor{position:relative; width:100%; height:420px; background:var(--papel); border:1px solid var(--linha); border-radius:4px; overflow:hidden}
+  #visor-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:20px; color:var(--tinta-2); font-size:16px; pointer-events:none}
+  .faixa{font-family:"JetBrains Mono", monospace; font-size:15px; overflow-x:auto; white-space:nowrap; padding:10px 0}
+  .faixa b{background:var(--vermelho); color:#fff; padding:1px 3px; border-radius:2px}
+
+  /* ---------- entregáveis ---------- */
+  ul.check{list-style:none; padding:0}
+  ul.check li{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--linha); margin:0; font-size:16px}
+  ul.check input{width:20px; height:20px; margin-top:4px; flex:none; accent-color:var(--verde)}
+  ul.check label{cursor:pointer}
+  ul.check input:checked + label{color:var(--tinta-2); text-decoration:line-through}
+
+  footer{margin:80px 0 0; padding:28px 0 56px; border-top:1px solid var(--linha); font-size:15px; color:var(--tinta-2)}
+  footer p{margin:0 0 4px}
+
+  @media (max-width:560px){
+    body{font-size:17px}
+    h2{font-size:27px}
+    #visor{height:320px}
+  }
+</style>
+</head>
+<body>
+<div class="coluna">
+
+  <a class="voltar" href="index.html">Química de Proteínas</a>
+
+  <header>
+    <p class="instituicao">Aula prática · Análise de sequência e estrutura</p>
+    <h1>Da sequência à estrutura</h1>
+    <p class="resumo">Um roteiro em sete etapas para sair de um código de acesso no UniProt e chegar a um modelo tridimensional validado. A proteína de trabalho é a lisozima C de galinha (P00698).</p>
+    <p>A escolha não é por acaso: a lisozima foi a primeira enzima a ter a estrutura resolvida por difração de raios X, pelo grupo de David Phillips, em 1965. Poucas proteínas são tão bem conhecidas, o que permite conferir cada resultado que você obtiver.</p>
+
+    <nav class="etapas" aria-label="Etapas da aula">
+      <ol>
+        <li><a href="#e1">Obter a sequência</a></li>
+        <li><a href="#e2">Buscar homólogos</a></li>
+        <li><a href="#e3">Curar e alinhar</a></li>
+        <li><a href="#e4">Reconstruir a filogenia</a></li>
+        <li><a href="#e5">Procurar estruturas no PDB</a></li>
+        <li><a href="#e6">Modelar por homologia</a></li>
+        <li><a href="#e7">Validar o modelo</a></li>
+        <li class="extra"><a href="#sintese">Síntese e entregáveis</a></li>
+      </ol>
+    </nav>
+  </header>
+
+  <!-- ================= ETAPA 1 ================= -->
+  <section id="e1">
+    <p class="num">Etapa 1</p>
+    <h2>Obter a sequência</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <p>No <a href="https://www.uniprot.org/uniprotkb/P00698" target="_blank" rel="noopener">UniProt</a>, busque por <em>lysozyme</em> e abra a entrada <strong>P00698</strong>, lisozima C de <em>Gallus gallus</em>. Baixe a sequência em formato FASTA e anote o número EC, o organismo e os domínios Pfam.</p>
+    </div>
+
+    <h3>Anatomia de um arquivo FASTA</h3>
+    <p>Passe o mouse ou toque em cada parte do cabeçalho para ver o que ela significa.</p>
+
+    <div class="fasta">
+<pre id="fasta"><span class="campo" data-e="O sinal &gt; é obrigatório: marca o início de um novo registro. Tudo até a quebra de linha é cabeçalho.">&gt;</span><span class="campo" data-e="sp indica Swiss-Prot, a parte do UniProt revisada manualmente por curadores. Entradas não revisadas (TrEMBL) aparecem como tr.">sp</span>|<span class="campo" data-e="P00698 é o número de acesso: estável e único. É ele que você cita em artigos e relatórios.">P00698</span>|<span class="campo" data-e="LYSC_CHICK é o nome da entrada: um mnemônico da proteína (LYSC) e da espécie (CHICK). Pode mudar entre versões do banco; o número de acesso, não.">LYSC_CHICK</span> <span class="campo" data-e="Lysozyme C é o nome recomendado da proteína.">Lysozyme C</span> <span class="campo" data-e="OS é o organismo de origem (Organism Species).">OS=Gallus gallus</span> <span class="campo" data-e="OX é o identificador taxonômico no NCBI Taxonomy. 9031 é Gallus gallus.">OX=9031</span> <span class="campo" data-e="GN é o nome do gene que codifica a proteína.">GN=LYZ</span> <span class="campo" data-e="PE é o nível de evidência de existência da proteína. PE=1 significa evidência experimental direta.">PE=1</span> <span class="campo" data-e="SV é a versão da sequência. Muda quando a sequência da entrada é corrigida.">SV=1</span>
+<span class="sinal">MRSLLILVLCFLPLAALG</span>KVFGRCELAAAMKRHGLDNYRGYSLGNWVCAAKFESNFNTQA
+TNRNTDGSTDYGILQINSRWWCNDGRTPGSRNLCNIPCSALLSSDITASVNCAKKIVSDG
+NGMNAWVAWRNRCKGTDVQAWIRGCRL</pre>
+      <p class="explica" id="explica" aria-live="polite">O cabeçalho ocupa uma única linha. Qualquer quebra de linha ou caractere invisível dentro dele quebra os programas que vão ler o arquivo depois.</p>
+    </div>
+    <p class="nota">O precursor tem 147 resíduos. Os 18 primeiros, <span class="sinal">em vermelho</span>, formam o peptídeo sinal, removido na secreção. A proteína madura tem 129 resíduos e cerca de 14,3 kDa. Toda a numeração usada na literatura e no PDB, como Glu35 e Asp52, se refere à cadeia madura.</p>
+
+    <h3>O número EC: classificar pela reação, não pelo nome</h3>
+    <p>A lisozima é a enzima <strong>EC 3.2.1.17</strong>. Cada nível do número restringe o anterior:</p>
+    <ol class="ec">
+      <li style="--n:0"><span class="cod">3</span>Hidrolases</li>
+      <li style="--n:1"><span class="cod">3.2</span>Glicosilases, que agem sobre ligações glicosídicas</li>
+      <li style="--n:2"><span class="cod">3.2.1</span>Glicosidases que hidrolisam compostos O- e S-glicosílicos</li>
+      <li style="--n:3"><span class="cod">3.2.1.17</span>Lisozima: hidrólise das ligações β(1→4) entre o ácido N-acetilmurâmico e a N-acetilglicosamina do peptidoglicano</li>
+    </ol>
+    <p>Registrar o número EC serve a três coisas: ele é a chave de busca em bancos especializados como <a href="https://www.brenda-enzymes.org/enzyme.php?ecno=3.2.1.17" target="_blank" rel="noopener">BRENDA</a>, KEGG e Rhea; permite verificar se os homólogos da etapa 2 mantêm a mesma função; e um homólogo muito parecido com número EC diferente é um sinal de alerta, que pode indicar uma pseudoenzima ou uma atividade que divergiu.</p>
+
+    <details class="pensar">
+      <summary>Para pensar</summary>
+      <p>O <a href="https://web.expasy.org/protparam/" target="_blank" rel="noopener">ProtParam</a> calcula para a lisozima madura um pI de cerca de 9,3, mas o valor medido experimentalmente fica perto de 11. De onde vem a diferença?</p>
+      <p><em>Resposta:</em> o cálculo usa valores de pKa tabelados para aminoácidos livres e trata cada grupo como independente. Na proteína enovelada, o ambiente local (resíduos vizinhos, grau de exposição ao solvente, interações eletrostáticas) desloca esses pKa. A sequência sozinha não enxerga a estrutura.</p>
+    </details>
+  </section>
+
+  <!-- ================= ETAPA 2 ================= -->
+  <section id="e2">
+    <p class="num">Etapa 2</p>
+    <h2>Buscar homólogos com o BLASTp</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <p>No <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE=Proteins" target="_blank" rel="noopener">BLASTp do NCBI</a>, cole o código P00698 ou a sequência, escolha o banco <strong>ClusteredNR</strong> e rode a busca. Anote, para os melhores resultados, o E-value, a porcentagem de identidade, a cobertura e os números de acesso.</p>
+    </div>
+
+    <h3>Por que o ClusteredNR</h3>
+    <p>O banco tradicional <em>nr</em> é enorme e muito enviesado para organismos-modelo: milhares de sequências quase idênticas de humanos, camundongos e bactérias de laboratório. O ClusteredNR agrupa as sequências com mais de 90% de identidade e faz a busca contra um representante de cada grupo. A busca fica mais rápida e os resultados, mais diversos taxonomicamente, que é o que interessa para estudar evolução.</p>
+
+    <h3>Como o BLAST ganha velocidade</h3>
+    <p>O BLAST abre mão da garantia de encontrar o alinhamento matematicamente ótimo (que o algoritmo de Smith-Waterman daria) para responder em segundos. Ele faz isso em quatro passos:</p>
+    <ol class="quatro">
+      <li><strong>Sementes</strong>A sequência de busca é quebrada em palavras curtas, de três aminoácidos no algoritmo clássico. Uma tabela de consulta é montada antes de tocar no banco.</li>
+      <li><strong>Palavras vizinhas</strong>Entram também as variações de cada palavra cuja pontuação passa de um limiar T. É assim que substituições conservativas são detectadas.</li>
+      <li><strong>Dois acertos</strong>Só vale a pena estender quando duas palavras aparecem na mesma diagonal, a pouca distância uma da outra. Isso evita gastar tempo com coincidências isoladas.</li>
+      <li><strong>Extensão com X-drop</strong>O alinhamento cresce para os dois lados até a pontuação cair X abaixo do máximo já atingido. O trecho resultante é o HSP (par de segmentos de alta pontuação).</li>
+    </ol>
+
+    <h3>A matriz BLOSUM62 e o escore log-odds</h3>
+    <p>Cada par de aminoácidos alinhados recebe uma pontuação que compara a frequência com que essa substituição é observada em proteínas relacionadas com a frequência esperada por acaso:</p>
+    <p class="formula">s(a,b) = (1/λ) · log [ q<sub>ab</sub> / (p<sub>a</sub> · p<sub>b</sub>) ]</p>
+    <p>Pense numa moeda lançada 1000 vezes que dá 900 caras, quando o acaso preveria 500. A razão observado/esperado é 1,8 e o log₂ é cerca de +0,85: positivo, sinal de que algo além do acaso está agindo. Na matriz, esse "algo" é a seleção natural. Pares que a evolução tolera bem ganham pontos positivos, e pares que ela evita ganham pontos negativos.</p>
+    <div class="tabela">
+    <table>
+      <thead><tr><th>Par</th><th>BLOSUM62</th><th>Leitura</th></tr></thead>
+      <tbody>
+        <tr><td>W–W</td><td class="n">11</td><td>Triptofano é raro; conservá-lo é um sinal forte</td></tr>
+        <tr><td>C–C</td><td class="n">9</td><td>Cisteínas conservadas costumam formar pontes dissulfeto</td></tr>
+        <tr><td>I–V</td><td class="n">3</td><td>Troca conservativa entre alifáticos</td></tr>
+        <tr><td>D–E</td><td class="n">2</td><td>Troca conservativa entre ácidos</td></tr>
+        <tr><td>D–L</td><td class="n">−4</td><td>Carga por cadeia hidrofóbica: raramente tolerada</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>O E-value</h3>
+    <p>O E-value é o <strong>número esperado</strong> de alinhamentos com pontuação igual ou maior que surgiriam por puro acaso numa busca desse tamanho:</p>
+    <p class="formula">E = K · m · n · e<sup>−λS</sup></p>
+    <p>Aqui <em>m</em> é o comprimento da sequência de busca, <em>n</em> o tamanho do banco e <em>S</em> a pontuação. Um E-value de 10<sup>−50</sup> significa que não se espera nenhum alinhamento tão bom por acaso: a homologia é praticamente certa. Um E-value de 2 significa que se esperam dois alinhamentos assim só por acaso, ou seja, ruído. Rigorosamente, o E-value não é uma probabilidade, embora os dois valores quase coincidam quando E é pequeno.</p>
+
+    <details class="pensar">
+      <summary>Para pensar</summary>
+      <p>O mesmo alinhamento, com a mesma pontuação, pode ter E-values diferentes quando a busca é feita no <em>nr</em> ou no ClusteredNR. Por quê?</p>
+      <p><em>Resposta:</em> o E-value é proporcional ao tamanho do banco (<em>n</em> na fórmula). Num banco menor, há menos chances de coincidência, e o mesmo escore fica mais significativo. Por isso o E-value sempre deve ser relatado junto com o banco usado.</p>
+    </details>
+  </section>
+
+  <!-- ================= ETAPA 3 ================= -->
+  <section id="e3">
+    <p class="num">Etapa 3</p>
+    <h2>Curar e alinhar</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <ol>
+        <li>Baixe em multi-FASTA um conjunto diverso de resultados do BLAST.</li>
+        <li>Confira se a sequência original, P00698, está no arquivo. Se não estiver, acrescente-a manualmente: ela é a referência que vai orientar a leitura do alinhamento e da árvore.</li>
+        <li>Remova fragmentos e sequências mal anotadas.</li>
+        <li>Alinhe no <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank" rel="noopener">Clustal Omega</a>.</li>
+      </ol>
+    </div>
+
+    <h3>Por que curar antes de alinhar</h3>
+    <p>Não alinhe cem sequências às cegas. Fragmentos e sequências mal anotadas distorcem todo o alinhamento progressivo e introduzem lacunas artificiais que se propagam para a árvore da etapa 4. Comece com um subconjunto bem escolhido, de umas dez sequências, confira se as regiões que você sabe serem conservadas (como Glu35 e Asp52) ficaram na mesma coluna, e só então aumente o conjunto.</p>
+
+    <h3>Modelos ocultos de Markov no alinhamento</h3>
+    <p>O Clustal Omega usa o HHalign, que representa cada família de sequências como um perfil estatístico: um modelo oculto de Markov com uma probabilidade própria para cada coluna. Cada coluna tem três estados possíveis.</p>
+
+    <figure>
+      <svg viewBox="0 0 640 230" role="img" aria-labelledby="hmm-t" style="width:100%;height:auto;background:#fff;border:1px solid var(--linha);border-radius:4px">
+        <title id="hmm-t">Perfil HMM com estados de correspondência, inserção e deleção</title>
+        <defs><marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#55686F"/></marker></defs>
+        <g stroke="#55686F" stroke-width="1.5" fill="none" marker-end="url(#seta)">
+          <line x1="62" y1="125" x2="128" y2="125"/>
+          <line x1="184" y1="125" x2="288" y2="125"/>
+          <line x1="344" y1="125" x2="448" y2="125"/>
+          <line x1="504" y1="125" x2="572" y2="125"/>
+          <line x1="178" y1="100" x2="220" y2="68"/>
+          <line x1="258" y1="68" x2="298" y2="100"/>
+          <line x1="338" y1="100" x2="380" y2="68"/>
+          <line x1="418" y1="68" x2="458" y2="100"/>
+          <line x1="156" y1="153" x2="156" y2="170"/>
+          <line x1="316" y1="153" x2="316" y2="170"/>
+          <line x1="180" y1="192" x2="290" y2="192"/>
+          <line x1="178" y1="185" x2="296" y2="148"/>
+        </g>
+        <text x="30" y="130" text-anchor="middle" font-size="14" fill="#55686F">início</text>
+        <text x="605" y="130" text-anchor="middle" font-size="14" fill="#55686F">fim</text>
+        <g fill="#2E5FA8">
+          <rect x="128" y="97" width="56" height="56" rx="3"/><rect x="288" y="97" width="56" height="56" rx="3"/><rect x="448" y="97" width="56" height="56" rx="3"/>
+        </g>
+        <g fill="#fff" font-size="16" font-weight="700" text-anchor="middle">
+          <text x="156" y="131">M1</text><text x="316" y="131">M2</text><text x="476" y="131">M3</text>
+        </g>
+        <g fill="#B8862A">
+          <path d="M239 32 L262 55 L239 78 L216 55 z"/><path d="M399 32 L422 55 L399 78 L376 55 z"/>
+        </g>
+        <g fill="#fff" font-size="14" font-weight="700" text-anchor="middle"><text x="239" y="60">I1</text><text x="399" y="60">I2</text></g>
+        <g fill="#fff" stroke="#7A5AA6" stroke-width="2.5"><circle cx="156" cy="192" r="20"/><circle cx="316" cy="192" r="20"/></g>
+        <g fill="#7A5AA6" font-size="14" font-weight="700" text-anchor="middle"><text x="156" y="197">D1</text><text x="316" y="197">D2</text></g>
+      </svg>
+      <figcaption>Um trecho de perfil HMM. As setas são transições, cada uma com sua probabilidade.</figcaption>
+    </figure>
+    <ul>
+      <li><strong style="color:var(--destaque)">Correspondência (M):</strong> uma coluna do alinhamento, com a sua própria distribuição de aminoácidos. Numa posição catalítica como Glu35, a distribuição é quase toda concentrada em um único resíduo.</li>
+      <li><strong style="color:var(--ocre)">Inserção (I):</strong> resíduos a mais numa linhagem, sem correspondência nas outras, como uma alça de superfície muito variável.</li>
+      <li><strong style="color:var(--violeta)">Deleção (D):</strong> um estado silencioso, que representa a ausência de um resíduo naquela coluna.</li>
+    </ul>
+    <p>Tratar as sequências como perfis estatísticos, e não com uma matriz de substituição fixa igual para todas as posições, é o que permite alinhar ao mesmo tempo um sítio ativo invariável e uma alça hipervariável.</p>
+  </section>
+
+  <!-- ================= ETAPA 4 ================= -->
+  <section id="e4">
+    <p class="num">Etapa 4</p>
+    <h2>Reconstruir a filogenia</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <p>Envie o alinhamento ao <a href="http://iqtree.cibiv.univie.ac.at/" target="_blank" rel="noopener">servidor web do IQ-TREE</a>. Deixe o ModelFinder escolher o modelo de substituição e peça 1000 réplicas de <em>ultrafast bootstrap</em>. Guarde a árvore em formato Newick.</p>
+    </div>
+
+    <h3>Qual método de reconstrução</h3>
+    <div class="tabela">
+    <table>
+      <thead><tr><th></th><th>Neighbor-Joining (NJ)</th><th>Máxima verossimilhança (ML)</th></tr></thead>
+      <tbody>
+        <tr><th>Princípio</th><td>Matriz de distâncias entre pares de sequências</td><td>Probabilidade dos dados sob um modelo explícito de substituição de aminoácidos</td></tr>
+        <tr><th>Velocidade</th><td>Muito rápido, O(N³)</td><td>Computacionalmente pesado</td></tr>
+        <tr><th>Uso</th><td>Visualização exploratória; muitas ferramentas de alinhamento geram uma árvore NJ automaticamente</td><td>Padrão para resultados publicáveis</td></tr>
+        <tr><th>Limitação ou vantagem</th><td>Sem modelo biológico explícito; subestima substituições múltiplas no mesmo sítio</td><td>Escolhe a árvore que torna o alinhamento observado mais provável; o suporte dos ramos é medido por bootstrap</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Para o ultrafast bootstrap do IQ-TREE, a recomendação dos autores é confiar num ramo quando o suporte é de 95% ou mais. Esse limiar é mais alto que os 70% usados tradicionalmente com o bootstrap comum, porque os dois métodos não são equivalentes.</p>
+  </section>
+
+  <!-- ================= ETAPA 5 ================= -->
+  <section id="e5">
+    <p class="num">Etapa 5</p>
+    <h2>Procurar estruturas no PDB</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <p>Rode o BLASTp dos homólogos contra o banco <strong>PDB</strong> (Protein Data Bank). Separe as sequências que já têm estrutura resolvida das que não têm.</p>
+    </div>
+
+    <p>A modelagem por homologia precisa de dois ingredientes: um <strong>alvo</strong>, uma proteína sem estrutura experimental, e um <strong>molde</strong>, um parente evolutivo próximo cuja estrutura já foi resolvida.</p>
+    <ul class="quatro sem-num">
+      <li><strong>Com estrutura no PDB</strong>Viram candidatos a molde. A lisozima de galinha tem centenas de estruturas, como <a href="https://www.rcsb.org/structure/1LYZ" target="_blank" rel="noopener">1LYZ</a> e <a href="https://www.rcsb.org/structure/1AKI" target="_blank" rel="noopener">1AKI</a>.</li>
+      <li><strong>Sem estrutura no PDB</strong>Viram candidatos a alvo. O objetivo aqui é escolher a lisozima de outra ave que ainda não tenha estrutura resolvida.</li>
+    </ul>
+    <p class="alerta"><strong>Atenção:</strong> a lisozima é uma exceção confortável. Para enzimas de organismos não-modelo, a cobertura estrutural costuma ser escassa, e muitas vezes é preciso recorrer a moldes distantes ou a métodos de predição como o AlphaFold.</p>
+  </section>
+
+  <!-- ================= ETAPA 6 ================= -->
+  <section id="e6">
+    <p class="num">Etapa 6</p>
+    <h2>Modelar por homologia</h2>
+
+    <div class="fazer">
+      <h3>O que fazer</h3>
+      <p>No <a href="https://swissmodel.expasy.org/" target="_blank" rel="noopener">SWISS-MODEL</a>, envie a sequência do alvo e informe o código PDB do molde escolhido. Baixe o arquivo de coordenadas (.pdb) do modelo e anote a identidade com o molde e o GMQE.</p>
+    </div>
+
+    <h3>A premissa</h3>
+    <p>A estrutura tridimensional é muito mais conservada na evolução do que a sequência. Duas proteínas podem ter trocado metade dos seus aminoácidos e manter o mesmo enovelamento. É isso que permite "emprestar" a estrutura de um parente.</p>
+    <p>Como regra prática, quando alvo e molde têm mais de 30% de identidade num alinhamento longo (acima de uns cem resíduos), eles quase sempre compartilham o mesmo enovelamento. Entre 20% e 30% fica a chamada zona crepuscular: a homologia pode existir, mas a identidade sozinha já não a garante. Quanto menor a identidade, mais o modelo depende de uma boa escolha de molde e de um bom alinhamento.</p>
+
+    <h3>O que o programa faz</h3>
+    <ol>
+      <li>Alinha a sequência do alvo com a do molde.</li>
+      <li>Transfere as coordenadas da cadeia principal do molde para o alvo nas regiões alinhadas.</li>
+      <li>Reconstrói as cadeias laterais, escolhendo os rotâmeros mais prováveis.</li>
+      <li>Modela as alças e inserções que não têm correspondência no molde, que são as regiões menos confiáveis do modelo.</li>
+    </ol>
+
+    <details class="pensar">
+      <summary>Para pensar</summary>
+      <p>Se o alvo e o molde têm 85% de identidade, onde você esperaria encontrar os maiores erros do modelo?</p>
+      <p><em>Resposta:</em> nas inserções e deleções, nas alças de superfície e nas cadeias laterais dos resíduos que mudaram. O núcleo hidrofóbico e a cadeia principal das hélices e folhas tendem a ser muito fiéis.</p>
+    </details>
+  </section>
+
+  <!-- ================= ETAPA 7 ================= -->
+  <section id="e7">
+    <p class="num">Etapa 7</p>
+    <h2>Validar o modelo</h2>
+    <p>Um modelo tridimensional é só uma hipótese até ser validado. Use três critérios independentes:</p>
+    <ul class="quatro sem-num">
+      <li><strong>Diagrama de Ramachandran</strong>Verifica se os ângulos diedros φ e ψ da cadeia principal são fisicamente possíveis. Num bom modelo, 98% ou mais dos resíduos ficam nas regiões favorecidas. Excesso de resíduos em regiões proibidas indica alças mal modeladas ou choques entre átomos.</li>
+      <li><strong>QMEAN (escore Z)</strong>Compara propriedades do modelo com as de milhares de estruturas experimentais de alta resolução. Valores próximos de zero são típicos de estruturas experimentais; abaixo de −4, o modelo é de baixa qualidade.</li>
+      <li><strong>RMSD</strong>O desvio quadrático médio, em ångströms, entre os átomos do modelo e os do molde depois da sobreposição. Abaixo de 2 Å nas regiões conservadas confirma que a transferência de coordenadas funcionou.</li>
+    </ul>
+  </section>
+
+  <!-- ================= SÍNTESE ================= -->
+  <section id="sintese">
+    <p class="num">Síntese</p>
+    <h2>Fechando o ciclo: da sequência ao sítio ativo</h2>
+    <p>A pergunta que amarra a aula: a conservação vista na sequência (1D) prevê a arquitetura funcional em 3D?</p>
+    <p>No alinhamento da etapa 3, <strong>Glu35</strong> e <strong>Asp52</strong> aparecem invariáveis em linhagens separadas por milhões de anos de evolução. Na sequência, eles estão longe um do outro, com 16 aminoácidos entre eles:</p>
+    <div class="faixa" aria-label="Trecho da sequência madura, resíduos 30 a 57">…C A A K F <b>E<sub>35</sub></b> S N F N T Q A T N R N T D G S T <b>D<sub>52</sub></b> Y G I L Q…</div>
+    <p>No espaço, porém, o enovelamento os coloca frente a frente, nos dois lados da fenda onde o peptidoglicano se encaixa. Gire a estrutura abaixo (PDB 1LYZ) com o mouse ou o dedo:</p>
+
+    <figure>
+      <div id="visor"><div id="visor-msg">Carregando a estrutura 1LYZ do PDB…</div></div>
+      <figcaption id="distancia">Glu35 e Asp52 em vermelho; o restante da cadeia em fita.</figcaption>
+    </figure>
+
+    <p>A convergência de duas evidências independentes, a conservação na sequência e a proximidade na estrutura, é o que sustenta a conclusão de que a função catalítica foi mantida ao longo da evolução.</p>
+    <p class="nota">Uma nota histórica: no mecanismo proposto por Phillips, o Glu35 doa um próton ao oxigênio glicosídico e o Asp52 estabiliza eletrostaticamente um íon oxocarbênio. Em 2001, Vocadlo e colaboradores (<em>Nature</em> 412:835) mostraram que o Asp52 forma uma ligação covalente transitória com o açúcar, agindo como nucleófilo. É um bom exemplo de como até a enzima mais estudada ainda guardava surpresas.</p>
+  </section>
+
+  <!-- ================= ENTREGÁVEIS ================= -->
+  <section id="entregaveis">
+    <h2>Entregáveis do relatório</h2>
+    <p>Marque cada item conforme for concluindo. As marcações ficam salvas neste navegador.</p>
+    <ul class="check" id="check">
+      <li><input type="checkbox" id="c1"><label for="c1"><strong>Etapa 1.</strong> Arquivo FASTA, número de acesso, organismo, número EC (3.2.1.17) e anotações Pfam.</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2"><strong>Etapa 2.</strong> E-value, identidade e cobertura dos melhores resultados, números de acesso e a diversidade taxonômica obtida no ClusteredNR.</label></li>
+      <li><input type="checkbox" id="c3"><label for="c3"><strong>Etapa 3.</strong> Arquivo final do alinhamento (.fasta), análise da distribuição de lacunas e lista das sequências removidas na curadoria, com o motivo.</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4"><strong>Etapa 4.</strong> Árvore em formato Newick, modelo escolhido pelo ModelFinder e valores de suporte dos ramos principais.</label></li>
+      <li><input type="checkbox" id="c5"><label for="c5"><strong>Etapa 5.</strong> Lista de moldes encontrados no PDB, a sequência alvo escolhida e o código PDB do molde escolhido.</label></li>
+      <li><input type="checkbox" id="c6"><label for="c6"><strong>Etapa 6.</strong> Arquivo de coordenadas do modelo (.pdb), identidade com o molde e escore GMQE.</label></li>
+      <li><input type="checkbox" id="c7"><label for="c7"><strong>Etapa 7.</strong> Porcentagem de resíduos em regiões favorecidas do Ramachandran, escore Z do QMEAN, RMSD em relação ao molde e uma figura mostrando a proximidade entre Glu35 e Asp52 no modelo.</label></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p><strong>Profª. Mariana T. Q. de Magalhães</strong></p>
+    <p>Química de Proteínas, PPGQ, Instituto Militar de Engenharia</p>
+    <p><a href="index.html">Voltar à página da disciplina</a></p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/3dmol@2.5.5/build/3Dmol-min.js"></script>
+<script>
+/* Não precisa mexer daqui para baixo. */
+
+/* 1. Cabeçalho FASTA interativo */
+(function(){
+  var campos = document.querySelectorAll("#fasta .campo");
+  var caixa = document.getElementById("explica");
+  campos.forEach(function(c){
+    c.tabIndex = 0;
+    var mostrar = function(){
+      campos.forEach(function(o){ o.classList.remove("ativo"); });
+      c.classList.add("ativo");
+      caixa.textContent = c.dataset.e;
+    };
+    c.addEventListener("mouseenter", mostrar);
+    c.addEventListener("click", mostrar);
+    c.addEventListener("focus", mostrar);
+  });
+})();
+
+/* 2. Lista de entregáveis, salva no navegador */
+(function(){
+  var chave = "qp-aula1-entregaveis";
+  var marcados = {};
+  try { marcados = JSON.parse(localStorage.getItem(chave)) || {}; } catch(e){}
+  document.querySelectorAll("#check input").forEach(function(cb){
+    cb.checked = !!marcados[cb.id];
+    cb.addEventListener("change", function(){
+      marcados[cb.id] = cb.checked;
+      try { localStorage.setItem(chave, JSON.stringify(marcados)); } catch(e){}
+    });
+  });
+})();
+
+/* 3. Estrutura 3D da lisozima com Glu35 e Asp52 destacados */
+(function(){
+  var msg = document.getElementById("visor-msg");
+  var legenda = document.getElementById("distancia");
+  if (typeof $3Dmol === "undefined"){
+    msg.textContent = "Não foi possível carregar o visualizador 3D. Veja a estrutura em rcsb.org/structure/1LYZ.";
+    return;
+  }
+  var v = $3Dmol.createViewer(document.getElementById("visor"), {backgroundColor:"white"});
+  $3Dmol.download("pdb:1LYZ", v, {}, function(m){
+    if (!m || m.selectedAtoms({}).length === 0){
+      msg.textContent = "Não foi possível baixar a estrutura. Veja em rcsb.org/structure/1LYZ.";
+      return;
+    }
+    msg.style.display = "none";
+    v.setStyle({}, {cartoon:{color:"#C9D6D3"}});
+    v.setStyle({hetflag:true}, {});
+    var sitio = {resi:[35,52]};
+    v.addStyle(sitio, {stick:{color:"#B8433A", radius:0.28}});
+    v.addResLabels({resi:35}, {font:"sans-serif", fontSize:13, fontColor:"white", backgroundColor:"#B8433A", backgroundOpacity:0.9});
+    v.addResLabels({resi:52}, {font:"sans-serif", fontSize:13, fontColor:"white", backgroundColor:"#B8433A", backgroundOpacity:0.9});
+    v.zoomTo(sitio); v.zoom(0.45);
+    v.render();
+
+    /* menor distância entre os oxigênios das carboxilas */
+    var e = m.selectedAtoms({resi:35, atom:["OE1","OE2"]});
+    var d = m.selectedAtoms({resi:52, atom:["OD1","OD2"]});
+    var min = Infinity;
+    e.forEach(function(a){ d.forEach(function(b){
+      var x = a.x-b.x, y = a.y-b.y, z = a.z-b.z;
+      min = Math.min(min, Math.sqrt(x*x+y*y+z*z));
+    }); });
+    if (isFinite(min)){
+      legenda.textContent = "Glu35 e Asp52 em vermelho; o restante da cadeia em fita. Na estrutura 1LYZ, os oxigênios das duas carboxilas ficam a " + min.toFixed(1).replace(".", ",") + " Å um do outro.";
+    }
+  });
+})();
+</script>
+</body>
+</html>
