@@ -3,20 +3,293 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Química de Proteínas · IME</title>
+<title>Química de Proteínas · PPGQ · IME</title>
+<meta name="description" content="Disciplina de pós-graduação em Química de Proteínas do Programa de Pós-Graduação em Química do Instituto Militar de Engenharia.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  body{max-width:760px;margin:40px auto;padding:0 20px;
-       font-family:sans-serif;line-height:1.6;color:#16232E;background:#F4F6F7}
-  h1{color:#2F6BB0}
-  a{color:#B03F32}
+  /* =====================================================
+     CORES DA PÁGINA — troque os códigos para mudar o visual
+     ===================================================== */
+  :root{
+    --fundo:   #F4F7F6;
+    --papel:   #FFFFFF;
+    --tinta:   #10252E;
+    --tinta-2: #55686F;
+    --linha:   #D5DEDC;
+    --destaque:#2E5FA8;
+
+    /* cores dos aminoácidos, por classe química */
+    --apolar:  #B8862A;
+    --polar:   #3A8A66;
+    --positivo:#2E5FA8;
+    --negativo:#B8433A;
+    --especial:#7A5AA6;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{transition:none !important}
+  }
+
+  body{
+    margin:0; background:var(--fundo); color:var(--tinta);
+    font-family:"Literata", Georgia, "Times New Roman", serif;
+    font-size:18px; line-height:1.7;
+  }
+  .coluna{max-width:760px; margin:0 auto; padding:0 24px}
+
+  a{color:var(--destaque); text-underline-offset:3px}
+  a:focus-visible, .aa:focus-visible{outline:3px solid var(--destaque); outline-offset:2px}
+
+  /* ---------- abertura ---------- */
+  header{padding:80px 0 24px}
+  .instituicao{color:var(--tinta-2); font-size:16px; margin:0 0 14px}
+  h1{
+    font-size:clamp(44px, 8vw, 76px); font-weight:700;
+    line-height:1; letter-spacing:-.02em; margin:0 0 20px;
+  }
+  .resumo{font-size:20px; max-width:34em; margin:0}
+
+  /* ---------- a sequência ---------- */
+  .sequencia{
+    margin:48px 0 0; padding:28px 24px 20px;
+    background:var(--papel); border:1px solid var(--linha); border-radius:6px;
+  }
+  .residuos{
+    display:flex; flex-wrap:wrap; gap:2px;
+    font-family:"JetBrains Mono", Consolas, monospace; font-weight:600; font-size:17px;
+  }
+  .aa{
+    width:1.45em; text-align:center; line-height:1.9; border-radius:3px;
+    cursor:default; transition:background .15s, color .15s;
+  }
+  .aa.apolar{color:var(--apolar)}
+  .aa.polar{color:var(--polar)}
+  .aa.positivo{color:var(--positivo)}
+  .aa.negativo{color:var(--negativo)}
+  .aa.especial{color:var(--especial)}
+  .aa.cys{cursor:pointer; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px}
+  .aa.ativo{background:var(--tinta); color:#fff}
+  .aa.par{background:var(--especial); color:#fff}
+
+  .leitura{
+    min-height:1.7em; margin:16px 0 0; font-size:16px; color:var(--tinta);
+  }
+  .legenda{
+    display:flex; flex-wrap:wrap; gap:6px 18px; margin:14px 0 0; padding:14px 0 0;
+    border-top:1px solid var(--linha); font-size:14px; color:var(--tinta-2);
+  }
+  .legenda span::before{
+    content:""; display:inline-block; width:10px; height:10px; border-radius:50%;
+    margin-right:6px; background:currentColor; vertical-align:0;
+  }
+  .legenda span{color:var(--tinta-2)}
+  .legenda span.apolar::before{background:var(--apolar)}
+  .legenda span.polar::before{background:var(--polar)}
+  .legenda span.positivo::before{background:var(--positivo)}
+  .legenda span.negativo::before{background:var(--negativo)}
+  .legenda span.especial::before{background:var(--especial)}
+
+  .nota{font-size:15px; color:var(--tinta-2); margin:12px 0 0}
+
+  /* ---------- seções ---------- */
+  section{padding:56px 0 0}
+  h2{font-size:30px; font-weight:700; line-height:1.2; margin:0 0 16px; letter-spacing:-.01em}
+  p{margin:0 0 16px}
+
+  .fatos{
+    display:grid; grid-template-columns:repeat(4, 1fr);
+    gap:0; margin:8px 0 0; border-top:1px solid var(--linha);
+  }
+  .fatos div{padding:14px 0; border-bottom:1px solid var(--linha)}
+  .fatos dt{font-size:14px; color:var(--tinta-2)}
+  .fatos dd{margin:0; font-weight:500}
+
+  /* programa: é uma sequência de aulas, por isso numerada */
+  ol.aulas{list-style:none; padding:0; margin:0; counter-reset:aula}
+  ol.aulas li{
+    counter-increment:aula; display:grid; grid-template-columns:3.2em 1fr; gap:4px 12px;
+    padding:18px 0; border-bottom:1px solid var(--linha);
+  }
+  ol.aulas li::before{
+    content:counter(aula); grid-row:span 2;
+    font-family:"JetBrains Mono", monospace; font-size:28px; font-weight:600;
+    color:var(--linha); line-height:1.2;
+  }
+  ol.aulas li.pronta::before{color:var(--destaque)}
+  .aula-titulo{font-weight:700; font-size:19px}
+  .aula-desc{font-size:16px; color:var(--tinta-2); margin:0}
+  .aula-desc a{font-weight:600}
+
+  ul.livros{padding-left:1.1em; margin:0}
+  ul.livros li{margin:0 0 10px}
+
+  footer{
+    margin:80px 0 0; padding:28px 0 56px; border-top:1px solid var(--linha);
+    font-size:15px; color:var(--tinta-2);
+  }
+  footer p{margin:0 0 4px}
+
+  @media (max-width:560px){
+    .fatos{grid-template-columns:1fr 1fr}
+    body{font-size:17px}
+    header{padding-top:48px}
+    .sequencia{padding:20px 14px 16px}
+    .residuos{font-size:15px}
+  }
 </style>
 </head>
 <body>
-  <h1>Química de Proteínas</h1>
-  <p>Disciplina de pós-graduação · PPGQ · IME</p>
-  <h2>Aulas</h2>
-  <ul>
-    <li><a href="aula1.html">Aula 1 · Estrutura primária</a></li>
-  </ul>
+<div class="coluna">
+
+  <!-- =====================================================
+       ABERTURA — título e frase de apresentação
+       ===================================================== -->
+  <header>
+    <p class="instituicao">Programa de Pós-Graduação em Química, Instituto Militar de Engenharia</p>
+    <h1>Química de Proteínas</h1>
+    <p class="resumo">Como uma sequência linear de aminoácidos se torna uma molécula com forma, estabilidade e função, e como medimos cada uma dessas coisas no laboratório.</p>
+
+    <!-- A sequência abaixo é montada automaticamente pelo script no fim da página -->
+    <figure class="sequencia" aria-labelledby="leg-seq">
+      <div class="residuos" id="residuos"></div>
+      <p class="leitura" id="leitura" aria-live="polite">Passe o mouse sobre um resíduo. Toque numa cisteína sublinhada para ver com quem ela forma ponte dissulfeto.</p>
+      <div class="legenda">
+        <span class="apolar">apolar</span>
+        <span class="polar">polar sem carga</span>
+        <span class="positivo">carga positiva</span>
+        <span class="negativo">carga negativa</span>
+        <span class="especial">Gly, Pro e Cys</span>
+      </div>
+      <figcaption class="nota" id="leg-seq">Lisozima C da clara de ovo de galinha (UniProt P00698), cadeia madura de 129 resíduos, com quatro pontes dissulfeto. É a proteína que acompanha a disciplina.</figcaption>
+    </figure>
+  </header>
+
+  <!-- =====================================================
+       SOBRE A DISCIPLINA — edite o texto livremente
+       ===================================================== -->
+  <section id="sobre">
+    <h2>Sobre a disciplina</h2>
+    <p>A disciplina percorre os níveis de organização das proteínas, da estrutura primária à quaternária, e as forças que os sustentam. Em cada etapa, a teoria vem acompanhada das ferramentas usadas para investigá-la: análise de sequências, bancos de dados estruturais, métodos espectroscópicos e ensaios de estabilidade.</p>
+    <p>O objetivo é que, ao final, você seja capaz de pegar uma proteína que nunca viu e montar sozinho o caminho para caracterizá-la.</p>
+
+    <dl class="fatos">
+      <div><dt>Nível</dt><dd>Mestrado e doutorado</dd></div>
+      <div><dt>Horário</dt><dd>A definir</dd></div>
+      <div><dt>Local</dt><dd>A definir</dd></div>
+      <div><dt>Carga horária</dt><dd>A definir</dd></div>
+    </dl>
+  </section>
+
+  <!-- =====================================================
+       PROGRAMA — cada <li> é uma aula.
+       Aula pronta: class="pronta" e um link para a página dela.
+       Aula futura: sem class e sem link.
+       ===================================================== -->
+  <section id="programa">
+    <h2>Programa</h2>
+    <ol class="aulas">
+      <li class="pronta">
+        <span class="aula-titulo">Estrutura primária</span>
+        <p class="aula-desc">Aminoácidos, ligação peptídica e o que dá para descobrir só olhando a sequência. <a href="aula1.html">Abrir a aula</a></p>
+      </li>
+      <li>
+        <span class="aula-titulo">Estrutura secundária</span>
+        <p class="aula-desc">Hélices, folhas e o diagrama de Ramachandran. Em preparação.</p>
+      </li>
+      <li>
+        <span class="aula-titulo">Estruturas terciária e quaternária</span>
+        <p class="aula-desc">Enovelamento, domínios e montagem de oligômeros. Em preparação.</p>
+      </li>
+      <li>
+        <span class="aula-titulo">Estabilidade e desnaturação</span>
+        <p class="aula-desc">Termodinâmica do enovelamento e como medi-la. Em preparação.</p>
+      </li>
+      <li>
+        <span class="aula-titulo">Métodos espectroscópicos</span>
+        <p class="aula-desc">Absorção, fluorescência e dicroísmo circular. Em preparação.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- =====================================================
+       BIBLIOGRAFIA
+       ===================================================== -->
+  <section id="bibliografia">
+    <h2>Bibliografia</h2>
+    <ul class="livros">
+      <li>Creighton, T. E. <em>Proteins: Structures and Molecular Properties</em>. 2ª ed. W. H. Freeman, 1993.</li>
+      <li>Branden, C.; Tooze, J. <em>Introduction to Protein Structure</em>. 2ª ed. Garland, 1999.</li>
+      <li>Fersht, A. <em>Structure and Mechanism in Protein Science</em>. W. H. Freeman, 1999.</li>
+      <li>Petsko, G. A.; Ringe, D. <em>Protein Structure and Function</em>. New Science Press, 2004.</li>
+    </ul>
+  </section>
+
+  <!-- =====================================================
+       RODAPÉ — seus dados de contato
+       ===================================================== -->
+  <footer>
+    <p><strong>Profª. Mariana T. Q. de Magalhães</strong></p>
+    <p>Laboratório de Bioquímica e Biofísica Aplicada (LBBA), Instituto Militar de Engenharia</p>
+    <p>Contato: <a href="mailto:seu-email@ime.eb.br">seu-email@ime.eb.br</a></p>
+  </footer>
+
+</div>
+
+<script>
+/* Monta a sequência da lisozima com cores e pontes dissulfeto.
+   Não precisa mexer aqui. */
+(function(){
+  var seq = "KVFGRCELAAAMKRHGLDNYRGYSLGNWVCAAKFESNFNTQATNRNTDGSTDYGILQINSRWWCNDGRTPGSRNLCNIPCSALLSSDITASVNCAKKIVSDGNGMNAWVAWRNRCKGTDVQAWIRGCRL";
+  var nomes = {A:"Alanina",R:"Arginina",N:"Asparagina",D:"Aspartato",C:"Cisteína",Q:"Glutamina",E:"Glutamato",G:"Glicina",H:"Histidina",I:"Isoleucina",L:"Leucina",K:"Lisina",M:"Metionina",F:"Fenilalanina",P:"Prolina",S:"Serina",T:"Treonina",W:"Triptofano",Y:"Tirosina",V:"Valina"};
+  var classe = function(a){
+    if ("AVLIMFW".indexOf(a) > -1) return "apolar";
+    if ("STNQYH".indexOf(a) > -1) return "polar";
+    if ("KR".indexOf(a) > -1) return "positivo";
+    if ("DE".indexOf(a) > -1) return "negativo";
+    return "especial"; /* G, P, C */
+  };
+  var pontes = {6:127, 127:6, 30:115, 115:30, 64:80, 80:64, 76:94, 94:76};
+  var caixa = document.getElementById("residuos");
+  var leitura = document.getElementById("leitura");
+  var inicial = leitura.textContent;
+  var els = [];
+
+  function limpar(){
+    els.forEach(function(e){ e.classList.remove("ativo","par"); });
+  }
+  function mostrar(i){
+    limpar();
+    var a = seq[i-1], el = els[i-1];
+    el.classList.add("ativo");
+    if (pontes[i]){
+      els[pontes[i]-1].classList.add("par");
+      leitura.textContent = "Cisteína " + i + ", em ponte dissulfeto com a cisteína " + pontes[i] + ".";
+    } else {
+      leitura.textContent = nomes[a] + ", posição " + i + ".";
+    }
+  }
+
+  for (var i = 1; i <= seq.length; i++){
+    var s = document.createElement("span");
+    var a = seq[i-1];
+    s.textContent = a;
+    s.className = "aa " + classe(a) + (a === "C" ? " cys" : "");
+    s.dataset.pos = i;
+    s.title = nomes[a] + " " + i;
+    if (a === "C"){ s.tabIndex = 0; s.setAttribute("role","button"); s.setAttribute("aria-label","Cisteína " + i); }
+    s.addEventListener("mouseenter", function(){ mostrar(+this.dataset.pos); });
+    s.addEventListener("click", function(){ mostrar(+this.dataset.pos); });
+    s.addEventListener("focus", function(){ mostrar(+this.dataset.pos); });
+    caixa.appendChild(s);
+    els.push(s);
+  }
+  caixa.addEventListener("mouseleave", function(){ limpar(); leitura.textContent = inicial; });
+})();
+</script>
 </body>
 </html>
