@@ -1,2 +1,2 @@
-# Quimica-de-Prote-nas
+# Quimica-de-Proteínas
 Disciplina de pós-graduação do Programa de Pós-Graduação em Química do Instituto Militar de Engenharia
